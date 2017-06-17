@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from tools.rand_sampler import RandSampler
 
+cap = cv2.VideoCapture(0)
 class DetRecordIter(mx.io.DataIter):
     """
     The new detection iterator wrapper for mx.io.ImageDetRecordIter which is
@@ -227,9 +228,12 @@ class DetIter(mx.io.DataIter):
             im_path = self._imdb.image_path_from_index(index)
             with open(im_path, 'rb') as fp:
                 img_content = fp.read()
+            ret,imgr = cap.read()
+            # imgr = cv2.imread('data/demo/person.jpg')
+            imgr = mx.nd.array(imgr)
             img = mx.img.imdecode(img_content)
             gt = self._imdb.label_from_index(index).copy() if self.is_train else None
-            data, label = self._data_augmentation(img, gt)
+            data, label = self._data_augmentation(imgr, gt)
             batch_data[i] = data
             if self.is_train:
                 batch_label.append(label)
@@ -243,47 +247,7 @@ class DetIter(mx.io.DataIter):
         """
         perform data augmentations: crop, mirror, resize, sub mean, swap channels...
         """
-        if self.is_train and self._rand_samplers:
-            rand_crops = []
-            for rs in self._rand_samplers:
-                rand_crops += rs.sample(label)
-            num_rand_crops = len(rand_crops)
-            # randomly pick up one as input data
-            if num_rand_crops > 0:
-                index = int(np.random.uniform(0, 1) * num_rand_crops)
-                width = data.shape[1]
-                height = data.shape[0]
-                crop = rand_crops[index][0]
-                xmin = int(crop[0] * width)
-                ymin = int(crop[1] * height)
-                xmax = int(crop[2] * width)
-                ymax = int(crop[3] * height)
-                if xmin >= 0 and ymin >= 0 and xmax <= width and ymax <= height:
-                    data = mx.img.fixed_crop(data, xmin, ymin, xmax-xmin, ymax-ymin)
-                else:
-                    # padding mode
-                    new_width = xmax - xmin
-                    new_height = ymax - ymin
-                    offset_x = 0 - xmin
-                    offset_y = 0 - ymin
-                    data_bak = data
-                    data = mx.nd.full((new_height, new_width, 3), 128, dtype='uint8')
-                    data[offset_y:offset_y+height, offset_x:offset_x + width, :] = data_bak
-                label = rand_crops[index][1]
-        if self.is_train:
-            interp_methods = [cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_AREA, \
-                              cv2.INTER_NEAREST, cv2.INTER_LANCZOS4]
-        else:
-            interp_methods = [cv2.INTER_LINEAR]
-        interp_method = interp_methods[int(np.random.uniform(0, 1) * len(interp_methods))]
-        data = mx.img.imresize(data, self._data_shape[1], self._data_shape[0], interp_method)
-        if self.is_train and self._rand_mirror:
-            if np.random.uniform(0, 1) > 0.5:
-                data = mx.nd.flip(data, axis=1)
-                valid_mask = np.where(label[:, 0] > -1)[0]
-                tmp = 1.0 - label[valid_mask, 1]
-                label[valid_mask, 1] = 1.0 - label[valid_mask, 3]
-                label[valid_mask, 3] = tmp
+        data = mx.img.imresize(data, self._data_shape[1], self._data_shape[0], cv2.INTER_LINEAR)
         data = mx.nd.transpose(data, (2,0,1))
         data = data.astype('float32')
         data = data - self._mean_pixels
