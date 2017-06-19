@@ -7,6 +7,8 @@ import cv2
 from tools.rand_sampler import RandSampler
 
 cap = cv2.VideoCapture(0)
+ret,imgi = cap.read()
+colors = dict()
 
 class DetIter(mx.io.DataIter):
    
@@ -74,16 +76,15 @@ class DetIter(mx.io.DataIter):
         """
         # index = self._index[self._current]
         # im_path = self._imdb.image_path_from_index(0)
-        im_path = 'data/demo/dog.jpg'
-        with open(im_path, 'rb') as fp:
-            img_content = fp.read()
+        # im_path = 'data/demo/dog.jpg'
+        # with open(im_path, 'rb') as fp:
+        #     img_content = fp.read()
 
         batch_data = mx.nd.zeros((self.batch_size, 3, self._data_shape[0], self._data_shape[1]))
         batch_label = [] 
-        
-        ret,img = cap.read()
-        img = mx.nd.array(img)
-        imgr = mx.img.imdecode(img_content)
+        global imgi
+        img = mx.nd.array(imgi)
+        # imgr = mx.img.imdecode(img_content)
         data = self._data_augmentation(img)
         batch_data[0] = data
             
@@ -151,7 +152,7 @@ class Detector(object):
 
         height = img.shape[0]
         width = img.shape[1]
-        colors = dict()
+        global colors
         # print dets.shape[0]
         for i in range(dets.shape[0]):
             cls_id = int(dets[i, 0])
@@ -178,15 +179,21 @@ class Detector(object):
 
         #cv2.namedWindow(stra)
         cv2.imshow('stra',img)
-        cv2.waitKey()
+        # cv2.waitKey()
     def detect_and_visualize(self, im_list, root_dir=None, extension=None,
                              classes=[], thresh=0.6, show_timer=False):
         
-        dets = self.im_detect(im_list, root_dir, extension, show_timer=show_timer)
-        # if not isinstance(im_list, list):
-        #     im_list = [im_list]
-        # assert len(dets) == len(im_list)
-        for k, det in enumerate(dets):
-            img = cv2.imread(im_list[k])
+        while(1):
+            global imgi
+            ret,imgi = cap.read()
+            dets = self.im_detect(im_list, root_dir, extension, show_timer=show_timer)
+            # if not isinstance(im_list, list):
+            #     im_list = [im_list]
+            # assert len(dets) == len(im_list)
+            # for k, det in enumerate(dets):
+        
             # img[:, :, (0, 1, 2)] = img[:, :, (2, 1, 0)]
-            self.visualize_detection(img, det, classes, thresh)
+            self.visualize_detection(imgi, dets[0], classes, thresh)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break

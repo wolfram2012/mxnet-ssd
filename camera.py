@@ -44,8 +44,6 @@ if __name__ == '__main__':
     image_list = ["data/demo/dog.jpg"]
     assert len(image_list) > 0, "No valid image specified to detect"
 
-    
-
     detector = get_detector(network, prefix, epoch,
                             data_shape,
                             (mean_r, mean_g, mean_b),
