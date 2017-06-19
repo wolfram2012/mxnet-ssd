@@ -213,35 +213,25 @@ class DetIter(mx.io.DataIter):
         """
         Load data/label from dataset
         """
+        # index = self._index[self._current]
+        im_path = self._imdb.image_path_from_index(0)
+        with open(im_path, 'rb') as fp:
+            img_content = fp.read()
+
         batch_data = mx.nd.zeros((self.batch_size, 3, self._data_shape[0], self._data_shape[1]))
         batch_label = []
-        for i in range(self.batch_size):
-            if (self._current + i) >= self._size:
-                if not self.is_train:
-                    continue
-                # use padding from middle in each epoch
-                idx = (self._current + i + self._size // 2) % self._size
-                index = self._index[idx]
-            else:
-                index = self._index[self._current + i]
-            # index = self.debug_index
-            im_path = self._imdb.image_path_from_index(index)
-            with open(im_path, 'rb') as fp:
-                img_content = fp.read()
-            ret,imgr = cap.read()
-            # imgr = cv2.imread('data/demo/person.jpg')
-            imgr = mx.nd.array(imgr)
-            img = mx.img.imdecode(img_content)
-            gt = self._imdb.label_from_index(index).copy() if self.is_train else None
-            data, label = self._data_augmentation(imgr, gt)
-            batch_data[i] = data
-            if self.is_train:
-                batch_label.append(label)
+        
+        
+        
+        ret,imgr = cap.read()
+        imgr = mx.nd.array(imgr)
+        img = mx.img.imdecode(img_content)
+        gt = self._imdb.label_from_index(index).copy() if self.is_train else None
+        data, label = self._data_augmentation(imgr, gt)
+        batch_data[0] = data
+            
         self._data = {'data': batch_data}
-        if self.is_train:
-            self._label = {'label': mx.nd.array(np.array(batch_label))}
-        else:
-            self._label = {'label': None}
+        self._label = {'label': None}
 
     def _data_augmentation(self, data, label):
         """
