@@ -2,7 +2,6 @@ from __future__ import print_function
 import mxnet as mx
 import numpy as np
 from timeit import default_timer as timer
-from dataset.testdb import TestDB
 import cv2
 from tools.rand_sampler import RandSampler
 
@@ -134,7 +133,7 @@ class Detector(object):
             result.append(res)
         return result
 
-    def im_detect(self, im_list, root_dir=None, extension=None, show_timer=False):
+    def im_detect(self, root_dir=None, extension=None, show_timer=False):
         
         # test_db = TestDB(im_list, root_dir=root_dir, extension=extension)
         test_iter = DetIter( 1, self.data_shape, self.mean_pixels,
@@ -180,13 +179,13 @@ class Detector(object):
         #cv2.namedWindow(stra)
         cv2.imshow('stra',img)
         # cv2.waitKey()
-    def detect_and_visualize(self, im_list, root_dir=None, extension=None,
+    def detect_and_visualize(self, root_dir=None, extension=None,
                              classes=[], thresh=0.6, show_timer=False):
         
         while(1):
             global imgi
             ret,imgi = cap.read()
-            dets = self.im_detect(im_list, root_dir, extension, show_timer=show_timer)
+            dets = self.im_detect(root_dir, extension, show_timer=show_timer)
             # if not isinstance(im_list, list):
             #     im_list = [im_list]
             # assert len(dets) == len(im_list)

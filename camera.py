@@ -37,17 +37,17 @@ if __name__ == '__main__':
     force_nms = True
     _dir = ''
     _extension = ''
-    thresh = 0.8
+    thresh = 0.71
     show_timer = True
 
     # parse image list
-    image_list = ["data/demo/dog.jpg"]
-    assert len(image_list) > 0, "No valid image specified to detect"
+    # image_list = ["data/demo/dog.jpg"]
+    # assert len(image_list) > 0, "No valid image specified to detect"
 
     detector = get_detector(network, prefix, epoch,
                             data_shape,
                             (mean_r, mean_g, mean_b),
                             ctx, nms_thresh, force_nms)
     # run detection
-    detector.detect_and_visualize(image_list, _dir, _extension,
+    detector.detect_and_visualize(_dir, _extension,
                                   CLASSES, thresh, show_timer)
