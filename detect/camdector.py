@@ -159,7 +159,7 @@ class Detector(object):
                 score = dets[i, 1]
                 if score > thresh:
                     if cls_id not in colors:
-                        colors[cls_id] = (self.randomRGB(), self.randomRGB(), self.randomRGB())
+                        colors[cls_id] = (0, 0, 255)
                     xmin = int(dets[i, 2] * width)
                     ymin = int(dets[i, 3] * height)
                     xmax = int(dets[i, 4] * width)
@@ -169,12 +169,9 @@ class Detector(object):
                     class_name = str(cls_id)
                     if classes and len(classes) > cls_id:
                         class_name = classes[cls_id]
-                    text = '{:s} {:.2f}'.format(class_name, score)
-                    texSize, baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_DUPLEX, 1, 1)
                     cv2.rectangle(
                         img, (xmin, ymin - 2), (xmin + texSize[0], ymin - texSize[1]), colors[cls_id], -1)
-                    cv2.putText(img, text,
-                                (xmin, ymin - 2), cv2. FONT_HERSHEY_DUPLEX, 1, self.colorInv(colors[cls_id]), 1)
+
 
         #cv2.namedWindow(stra)
         cv2.imshow('stra',img)
