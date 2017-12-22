@@ -169,8 +169,12 @@ class Detector(object):
                     class_name = str(cls_id)
                     if classes and len(classes) > cls_id:
                         class_name = classes[cls_id]
+                    text = '{:s}'.format(class_name)
+                    texSize, baseline = cv2.getTextSize(text, cv2.FONT_HERSHEY_DUPLEX, 1, 1)
                     cv2.rectangle(
                         img, (xmin, ymin - 2), (xmin + texSize[0], ymin - texSize[1]), colors[cls_id], -1)
+                    cv2.putText(img, text,
+                                    (xmin, ymin - 2), cv2. FONT_HERSHEY_DUPLEX, 1, self.colorInv(colors[cls_id]), 1)
 
 
         #cv2.namedWindow(stra)
